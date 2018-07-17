@@ -1,0 +1,118 @@
+#!/bin/bash
+# nginx-nr-agent init script
+#
+# chkconfig: - 50 50
+# description: nginx New Relic agent daemon
+#
+# processname: /usr/bin/nginx-nr-agent.py
+# config: /etc/nginx-nr-agent/nginx-nr-agent.ini
+# pidfile: /var/run/nginx-nr-agent/nginx-nr-agent.pid
+
+### BEGIN INIT INFO
+# Provides: nginx-nr-agent
+# Required-Start: $local_fs $network
+# Required-Stop: $local_fs $network
+# Should-Start: 
+# Should-Stop: 
+# Default-Start: 
+# Default-Stop: 
+# Short-Description: start and stop nginx-nr-agent daemon
+# Description: nginx New Relic agent daemon
+### END INIT INFO
+
+# source function library
+. /etc/init.d/functions
+
+RETVAL=0
+prog="nginx-nr-agent"
+binary=/usr/bin/nginx-nr-agent.py
+pidfile=/var/run/nginx-nr-agent/nginx-nr-agent.pid
+
+[ -r /etc/sysconfig/nginx-nr-agent ] && . /etc/sysconfig/nginx-nr-agent
+
+start() {
+        [ -x $binary ] || exit 5
+        echo -n $"Starting $prog: "
+        if [ $UID -ne 0 ]; then
+                RETVAL=1
+                failure
+        else
+                mkdir -p /var/run/nginx-nr-agent && chown nobody /var/run/nginx-nr-agent
+                daemon --user=nobody $binary -p $pidfile start
+                RETVAL=$?
+                [ $RETVAL -eq 0 ] && touch /var/lock/subsys/nginx-nr-agent
+        fi;
+        echo 
+        return $RETVAL
+}
+
+stop() {
+        echo -n $"Stopping $prog: "
+        if [ $UID -ne 0 ]; then
+                RETVAL=1
+                failure
+        else
+                killproc -p $pidfile $binary
+                RETVAL=$?
+                [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/nginx-nr-agent
+        fi;
+        echo
+        return $RETVAL
+}
+
+restart(){
+	stop
+	start
+}
+
+condrestart(){
+    [ -e /var/lock/subsys/nginx-nr-agent ] && restart
+    return 0
+}
+
+configtest(){
+        [ -x $binary ] || exit 5
+        if [ $UID -ne 0 ]; then
+                RETVAL=1
+                failure
+        else
+                $binary -p $pidfile configtest
+                RETVAL=$?
+        fi;
+        return $RETVAL
+}
+
+case "$1" in
+  start)
+	configtest || exit 1
+	start
+	RETVAL=$?
+	;;
+  stop)
+	stop
+	RETVAL=$?
+	;;
+  restart)
+	configtest || exit 1
+	restart
+	RETVAL=$?
+        ;;
+  condrestart|try-restart)
+	configtest || exit 1
+        condrestart
+        RETVAL=$?
+        ;;
+  status)
+        status -p $pidfile nginx-nr-agent
+	RETVAL=$?
+        ;;
+  configtest)
+	configtest
+	RETVAL=$?
+	;;
+  *)
+	echo $"Usage: $0 {start|stop|status|restart|condrestart|configtest}"
+	RETVAL=2
+esac
+
+exit $RETVAL

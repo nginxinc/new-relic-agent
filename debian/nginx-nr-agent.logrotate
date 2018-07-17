@@ -1,0 +1,7 @@
+/var/log/nginx-nr-agent.log {
+    compress
+    copytruncate
+    missingok
+    rotate 3
+    size 5M
+}

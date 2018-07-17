@@ -1,0 +1,78 @@
+nginx-nr-agent (2.0.0-11) unstable; urgency=low
+
+  * 2.0.0-11
+  * avoid exiting on unhandled errors while fetching status
+
+ -- Andrei Belov <defan@nginx.com>  Tue, 18 Apr 2017 10:30:00 +0300
+
+nginx-nr-agent (2.0.0-10) unstable; urgency=low
+
+  * 2.0.0-10
+  * upstream keepalive connections metric reintroduced
+
+ -- Andrei Belov <defan@nginx.com>  Mon,  9 Jan 2017 15:50:00 +0300
+
+nginx-nr-agent (2.0.0-9) unstable; urgency=low
+
+  * 2.0.0-9
+  * lock permissions adjusted
+
+ -- Andrei Belov <defan@nginx.com>  Wed, 17 Aug 2016 14:30:00 +0300
+
+nginx-nr-agent (2.0.0-8) unstable; urgency=low
+
+  * 2.0.0-8
+  * fixed handling of caches configured without the "max_size" parameter
+  * added support for HTTPS proxy
+
+ -- Andrei Belov <defan@nginx.com>  Mon,  1 Feb 2016 07:00:00 +0300
+
+nginx-nr-agent (2.0.0-7) unstable; urgency=low
+
+  * 2.0.0-7
+  * made compatible with nginx-plus-r7 (peer stats moved)
+
+ -- Andrei Belov <defan@nginx.com>  Mon, 21 Sep 2015 10:00:00 +0300
+
+nginx-nr-agent (2.0.0-6) unstable; urgency=low
+
+  * 2.0.0-6
+  * made compatible with nginx-plus-r6 (per-peer keepalive counter removed)
+
+ -- Andrei Belov <defan@nginx.com>  Mon,  6 Apr 2015 10:30:00 +0300
+
+nginx-nr-agent (2.0.0-5) unstable; urgency=low
+
+  * 2.0.0-5
+  * bundled documentation announced in post-install banner
+
+ -- Andrei Belov <defan@nginx.com>  Tue, 10 Mar 2015 15:00:00 +0300
+
+nginx-nr-agent (2.0.0-4) unstable; urgency=low
+
+  * 2.0.0-4
+  * fixed ZeroDivisionError while calculating cache hit ratios
+
+ -- Andrei Belov <defan@nginx.com>  Tue, 31 Oct 2014 14:50:00 -0800
+
+nginx-nr-agent (2.0.0-3) unstable; urgency=low
+
+  * 2.0.0-3
+  * fixed pidfile handling between reboots
+
+ -- Andrei Belov <defan@nginx.com>  Tue, 21 Oct 2014 11:20:00 -0800
+
+nginx-nr-agent (2.0.0-2) unstable; urgency=low
+
+  * 2.0.0-2
+  * fixed Content-Type header recognition
+
+ -- Andrei Belov <defan@nginx.com>  Fri, 17 Oct 2014 10:00:00 +0400
+
+nginx-nr-agent (2.0.0-1) unstable; urgency=low
+
+  * 2.0.0
+  * refactored from previous Ruby-based version to Python
+  * provides more metrics for N+ (server zones, caches)
+
+ -- Andrei Belov <defan@nginx.com>  Wed, 10 Sep 2014 16:30:00 +0400

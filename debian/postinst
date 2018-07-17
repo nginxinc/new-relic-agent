@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -e
+
+if [ "$1" != "configure" ]; then
+    exit 0
+fi
+
+if [ -z "$2" ]; then
+    update-rc.d nginx-nr-agent defaults >/dev/null
+    mkdir -p /var/run/nginx-nr-agent
+    touch /var/log/nginx-nr-agent.log
+    chown nobody /var/run/nginx-nr-agent /var/log/nginx-nr-agent.log
+fi

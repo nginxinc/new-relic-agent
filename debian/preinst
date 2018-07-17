@@ -1,0 +1,40 @@
+#!/bin/sh
+
+set -e
+
+case "$1" in
+    install)
+        cat <<BANNER
+----------------------------------------------------------------------
+
+Thanks for using NGINX!
+
+NGINX agent for New Relic is installed. Configuration file is:
+/etc/nginx-nr-agent/nginx-nr-agent.ini
+
+Documentation and configuration examples are available here:
+/usr/share/doc/nginx-nr-agent/README.txt
+
+Please use "service nginx-nr-agent" to control the agent daemon.
+
+More information about NGINX products is available on:
+* https://www.nginx.com/
+
+----------------------------------------------------------------------
+BANNER
+        ;;
+    upgrade)
+        ;;
+
+    abort-upgrade)
+        ;;
+
+    *)
+        echo "preinst called with unknown argument \`$1'" >&2
+        exit 0
+        ;;
+esac
+
+#DEBHELPER#
+
+exit 0

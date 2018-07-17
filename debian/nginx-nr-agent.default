@@ -1,0 +1,5 @@
+# Defaults for nginx-nr-agent initscript
+# sourced by /etc/init.d/nginx-nr-agent
+
+export HTTPS_PROXY=""
+

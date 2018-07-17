@@ -1,0 +1,15 @@
+Source: nginx-nr-agent
+Section: misc
+Priority: optional
+Maintainer: Andrei Belov <defan@nginx.com>
+Build-Depends: debhelper (>> 5.0.0)
+Standards-Version: 3.8.2
+Homepage: https://www.nginx.com/
+
+Package: nginx-nr-agent
+Architecture: all
+Depends: ${misc:Depends}, lsb-base, python, python-daemon, python-setproctitle
+Description: New Relic agent for NGINX and NGINX Plus
+ This package contains agent script used for collecting
+ and reporting a number of metrics from NGINX and/or NGINX Plus
+ instances to New Relic.
