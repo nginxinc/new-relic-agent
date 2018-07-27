@@ -16,6 +16,7 @@ import traceback
 NEWRELIC_API_URL = 'https://platform-api.newrelic.com/platform/v1/metrics'
 AGENT_GUID = 'com.nginx.newrelic-agent'
 AGENT_VERSION = '2.0.0'
+API_VERSION = '1'
 
 DEFAULT_CONFIG_FILE = '/etc/nginx-nr-agent/nginx-nr-agent.ini'
 DEFAULT_PID_FILE = '/var/run/nginx-nr-agent/nginx-nr-agent.pid'
@@ -23,12 +24,12 @@ DEFAULT_POLL_INTERVAL = 60.0
 
 LOG = logging.getLogger('nginx-nr-agent')
 
-class NginxStatusCollector(object):
+class NginxApiCollector(object):
 
     def __init__(self, section, name, url, poll_interval):
 	self.section = section
 	self.name = name
-	self.url = url
+	self.url = url.rstrip('/') + '/' + API_VERSION
 	self.basic_auth = None
 	self.gauges = dict()
 	self.derives = dict()
@@ -62,23 +63,40 @@ class NginxStatusCollector(object):
 	self.derives[metric] = value
 	self.deltas[metric] = delta
 
-    def get_status_data(self):
-	r = Request(self.url)
+    def get_api_json(self, uri):
+	resp = self.get_request(uri)
+	if resp == None:
+	    return resp
+	try:
+	    js = json.loads(resp.read())
+	except ValueError, e:
+	    LOG.error("could not parse JSON from new api body: '%s'", resp.read())
+	    return None
+	return js
+
+    def get_base_type(self):
+	resp = self.get_request("")
+	if resp == None:
+	    return resp
+	return resp.info().getheader('Content-Type')
+
+    def get_request(self, uri):
+	r = Request(self.url + uri)
 	if self.basic_auth:
 	    r.add_header('Authorization', "Basic %s" % self.basic_auth)
 	try:
 	    u = urlopen(r)
 	except HTTPError as e:
-	    LOG.error("request for %s returned %d", self.url, e.code)
+	    LOG.error("request for %s returned %d", self.url + uri, e.code)
 	    return None
 	except URLError as e:
-	    LOG.error("request for %s failed: %s", self.url, e.reason)
+	    LOG.error("request for %s failed: %s", self.url + uri, e.reason)
 	    return None
 	except:
-	    LOG.error("EXCEPTION while fetching status: %s", traceback.format_exc())
+	    LOG.error("EXCEPTION while fetching api: %s", traceback.format_exc())
 	    return None
-	ct = u.info().getheader('Content-Type')
-	return {'content-type': ct, 'body': u.read()}
+	return u
+
 
     def update_base_stats(self, stats):
 	# conn/accepted, conn/dropped, conn/active, conn/idle, reqs/total, reqs/current
@@ -89,11 +107,12 @@ class NginxStatusCollector(object):
 	self.update_derive('reqs/total', 'Requests/sec', stats[4])
 	self.update_gauge('reqs/current', 'Requests', stats[5])
 
-    def update_extended_stats(self, js):
-	LOG.debug("updating extended metrics for status version %d", js['version'])
+    def update_extended_stats(self,):
+	LOG.debug("updating extended metrics for api version %s", self.url.split('/')[-1])
 
-	if js.get('upstreams'):
-	    LOG.debug("collecting extra metrics for %d upstreams", len(js['upstreams']))
+	upstreams = self.get_api_json("/http/upstreams")
+	if upstreams:
+	    LOG.debug("collecting extra metrics for %d upstreams", len(upstreams))
 
 	    u_srv_up, u_srv_down, u_srv_unavail, u_srv_unhealthy = 0, 0, 0, 0
 	    u_conn_active, u_conn_keepalive = 0, 0
@@ -102,10 +121,9 @@ class NginxStatusCollector(object):
 	    u_fails, u_unavail = 0, 0
 	    u_hc_checks, u_hc_fails, u_hc_unhealthy = 0, 0, 0
 
-	    for u in js['upstreams'].itervalues():
-		if js['version'] >= 6:
-		    u_conn_keepalive += u['keepalive']
-		upeers = u if js['version'] < 6 else u['peers']
+	    for u in upstreams.itervalues():
+		u_conn_keepalive += u['keepalive']
+		upeers = u['peers']
 		for us in upeers:
 		    if us['state'] == 'up':
 			u_srv_up += 1
@@ -117,8 +135,6 @@ class NginxStatusCollector(object):
 			u_srv_unhealthy += 1
 
 		    u_conn_active += us['active']
-		    if js['version'] < 5:
-			u_conn_keepalive += us['keepalive']
 		    u_reqs += us['requests']
 		    u_resp += us['responses']['total']
 		    u_resp_1xx += us['responses']['1xx']
@@ -159,13 +175,14 @@ class NginxStatusCollector(object):
 	    self.update_gauge('upstream/hc/fails', 'times', u_hc_fails)
 	    self.update_gauge('upstream/hc/unhealthies', 'times', u_hc_unhealthy)
 
-	if js.get('server_zones'):
-	    LOG.debug("collecting extra metrics for %d server_zones", len(js['server_zones']))
+	server_zones = self.get_api_json("/http/server_zones")
+	if server_zones:
+	    LOG.debug("collecting extra metrics for %d server_zones", len(server_zones))
 
 	    sz_processing, sz_requests, sz_received, sz_sent = 0, 0, 0, 0
 	    sz_resp, sz_resp_1xx, sz_resp_2xx, sz_resp_3xx, sz_resp_4xx, sz_resp_5xx = 0, 0, 0, 0, 0, 0
 
-	    for sz in js['server_zones'].itervalues():
+	    for sz in server_zones.itervalues():
 		sz_processing += sz['processing']
 		sz_requests += sz['requests']
 		sz_received += sz['received']
@@ -188,8 +205,9 @@ class NginxStatusCollector(object):
 	    self.update_derive('sz/resp/4xx', 'Responses/sec', sz_resp_4xx)
 	    self.update_derive('sz/resp/5xx', 'Responses/sec', sz_resp_5xx)
 
-	if js.get('caches'):
-	    LOG.debug("collecting extra metrics for %d caches", len(js['caches']))
+	caches = self.get_api_json("/http/caches")
+	if caches:
+	    LOG.debug("collecting extra metrics for %d caches", len(caches))
 
 	    cache_size, cache_max_size = 0, 0
 	    cache_resp_hit, cache_resp_stale, cache_resp_updating, cache_resp_revalidated = 0, 0, 0, 0
@@ -199,7 +217,7 @@ class NginxStatusCollector(object):
 	    cache_resp_written_miss, cache_resp_written_expired, cache_resp_written_bypass = 0, 0, 0
 	    cache_bytes_written_miss, cache_bytes_written_expired, cache_bytes_written_bypass = 0, 0, 0
 
-	    for c in js['caches'].itervalues():
+	    for c in caches.itervalues():
 		cache_size += c['size']
 		cache_max_size += c.get('max_size', 0)
 		cache_resp_hit += c['hit']['responses']
@@ -284,36 +302,36 @@ class NginxStatusCollector(object):
 		int(m.group('reading')) + int(m.group('writing'))])
 	return True
 
-    def process_new_status(self, body):
-	LOG.debug("processing new status for %s", self.name)
-	try:
-	    js = json.loads(body)
-	except ValueError, e:
-	    LOG.error("could not parse JSON from new status body: '%s'", body)
+    def process_new_api(self, body):
+	LOG.debug("processing new api for %s", self.name)
+	connections = self.get_api_json("/connections")
+	requests = self.get_api_json("/http/requests")
+	if connections is None or requests is None:
 	    return False
 	self.lastupdate = time()
 	self.update_base_stats([
-		js['connections']['accepted'],
-		js['connections']['dropped'],
-		js['connections']['active'],
-		js['connections']['idle'],
-		js['requests']['total'],
-		js['requests']['current']])
-	self.update_extended_stats(js)
+		connections['accepted'],
+		connections['dropped'],
+		connections['active'],
+		connections['idle'],
+		requests['total'],
+		requests['current']])
+	self.update_extended_stats()
 	return True
 
     def poll(self):
 	LOG.debug("getting data from %s (lastupdate=%.3f)", self.url, self.lastupdate)
-	data = self.get_status_data()
+	data = self.get_api_json("")
+	ct = self.get_base_type()
 	if data is None:
-	    LOG.error("get_status_data() returned nothing to process")
+	    LOG.error("Base endpoint returned nothing to process")
 	    return False
-	if data['content-type'].startswith('text/plain'):
+	if ct.startswith('text/plain'):
 	    rc = self.process_stub_status(data['body'])
-	elif data['content-type'].startswith('application/json'):
-	    rc = self.process_new_status(data['body'])
+	elif ct.startswith('application/json'):
+	    rc = self.process_new_api(data)
 	else:
-	    LOG.error("unknown Content-Type from %s: '%s'", self.url, data['content-type'])
+	    LOG.error("unknown Content-Type from %s: '%s'", self.url, ct)
 	    return False
 	self.prevupdate = self.lastupdate
 	return rc
@@ -477,7 +495,7 @@ class NginxNewRelicAgent():
 		continue
 	    if not config.has_option(s, 'name') or not config.has_option(s, 'url'):
 		continue
-	    ns = NginxStatusCollector(s, config.get(s, 'name'), config.get(s, 'url'), self.poll_interval)
+	    ns = NginxApiCollector(s, config.get(s, 'name'), config.get(s, 'url'), self.poll_interval)
 	    if config.has_option(s, 'http_user') and config.has_option(s, 'http_pass'):
 		ns.basic_auth = base64.b64encode(config.get(s, 'http_user') + b':' + config.get(s, 'http_pass'))
 	    self.sources.append(ns)
@@ -535,7 +553,7 @@ class MyDaemonRunner(runner.DaemonRunner):
 	print "valid actions: start, stop, configtest"
 	print " -c, --config       path to configuration file"
 	print " -p, --pidfile      path to pidfile"
-	print " -f, --foreground   do not detach from terminal" 
+	print " -f, --foreground   do not detach from terminal"
 	sys.exit(rc)
 
     def parse_args(self, argv=None):
