@@ -29,7 +29,7 @@ class NginxApiCollector(object):
     def __init__(self, section, name, url, poll_interval):
 	self.section = section
 	self.name = name
-	self.url = url.rstrip('/') + '/' + API_VERSION
+	self.url = url.rstrip('/')
 	self.basic_auth = None
 	self.gauges = dict()
 	self.derives = dict()
@@ -108,7 +108,7 @@ class NginxApiCollector(object):
 	self.update_gauge('reqs/current', 'Requests', stats[5])
 
     def update_extended_stats(self,):
-	LOG.debug("updating extended metrics for api version %s", self.url.split('/')[-1])
+	LOG.debug("updating extended metrics for api version %s", API_VERSION)
 
 	upstreams = self.get_api_json("/http/upstreams")
 	if upstreams:
@@ -279,7 +279,11 @@ class NginxApiCollector(object):
 		    cache_hit_ratio_short = (cache_resp_cached / float(cache_resp_cached + cache_resp_uncached)) * 100.0
 		    self.update_gauge('cache/hitratio/short', 'Percent', cache_hit_ratio_short)
 
-    def process_stub_status(self, body):
+    def process_stub_status(self):
+	body = self.get_request("").read()
+	if body is None:
+	    LOG.error("stub_status returned nothing to process")
+	    return False
 	LOG.debug("processing stub status for %s", self.name)
 	STUB_RE = re.compile(r'^Active connections: (?P<connections>\d+)\s+[\w ]+\n'
                   r'\s+(?P<accepts>\d+)'
@@ -302,8 +306,9 @@ class NginxApiCollector(object):
 		int(m.group('reading')) + int(m.group('writing'))])
 	return True
 
-    def process_new_api(self, body):
+    def process_new_api(self):
 	LOG.debug("processing new api for %s", self.name)
+	self.url += '/' + API_VERSION
 	connections = self.get_api_json("/connections")
 	requests = self.get_api_json("/http/requests")
 	if connections is None or requests is None:
@@ -321,15 +326,11 @@ class NginxApiCollector(object):
 
     def poll(self):
 	LOG.debug("getting data from %s (lastupdate=%.3f)", self.url, self.lastupdate)
-	data = self.get_api_json("")
 	ct = self.get_base_type()
-	if data is None:
-	    LOG.error("Base endpoint returned nothing to process")
-	    return False
 	if ct.startswith('text/plain'):
-	    rc = self.process_stub_status(data['body'])
+	    rc = self.process_stub_status()
 	elif ct.startswith('application/json'):
-	    rc = self.process_new_api(data)
+	    rc = self.process_new_api()
 	else:
 	    LOG.error("unknown Content-Type from %s: '%s'", self.url, ct)
 	    return False
