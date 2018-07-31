@@ -102,9 +102,9 @@ you have to special location containing "stub_status" directive, e.g.:
 
 ### NGINX Plus
 
-To configure this plugin to work with NGINX Plus using enhanced status
-module (http://nginx.org/en/docs/http/ngx_http_status_module.html),
-you have to add special location containing "status" directive, e.g.:
+To configure this plugin to work with NGINX Plus using api
+module (http://nginx.org/en/docs/http/ngx_http_api_module.html),
+you have to add special location containing "api" directive, e.g.:
 
   Example #1: for NGINX Plus status, listen on `*:80`, authorized access:
 
@@ -113,15 +113,15 @@ you have to add special location containing "status" directive, e.g.:
         listen 80;
         server_name example.com;
 
-        location = /status {
-            status;
-            auth_basic "nginx status";
+        location = /api {
+            api;
+            auth_basic "nginx api";
             auth_basic_user_file /path/to/auth_file;
         }
     }
   ```
 
-  (see http://nginx.org/en/docs/http/ngx_http_status_module.html for details)
+  (see http://nginx.org/en/docs/http/ngx_http_api_module.html#api for details)
 
   Do not forget to reload nginx after changing the configuration.
 
@@ -133,7 +133,7 @@ Edit nginx-nr-agent.ini configuration file:
   * insert your New Relic license key;
 
   * configure data sources (your nginx instances) using the following parameters:
-    - url (required): full URL pointing to stub_status (nginx OSS) or status (N+) output;
+    - url (required): full URL pointing to stub_status (nginx OSS) or api (N+) output;
     - name (required): name of the instance as it will be shown in the New Relic UI;
     - http_user, http_pass (optional): credentials used for
       HTTP basic authorization.
