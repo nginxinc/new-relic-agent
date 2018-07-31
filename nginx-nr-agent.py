@@ -308,7 +308,8 @@ class NginxApiCollector(object):
 
     def process_new_api(self):
 	LOG.debug("processing new api for %s", self.name)
-	self.url += '/' + API_VERSION
+	if self.url[-1] != API_VERSION:
+	    self.url += '/' + API_VERSION
 	connections = self.get_api_json("/connections")
 	requests = self.get_api_json("/http/requests")
 	if connections is None or requests is None:
