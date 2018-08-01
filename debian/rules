@@ -29,8 +29,6 @@ install: build
 	dh_installlogrotate
 	install -m 755 debian/nginx-nr-agent.py debian/nginx-nr-agent/usr/bin/
 	install -m 644 debian/nginx-nr-agent.ini debian/nginx-nr-agent/etc/nginx-nr-agent/
-	mkdir -p debian/nginx-nr-agent/usr/share/doc/nginx-nr-agent
-	install -m 644 debian/README.txt debian/nginx-nr-agent/usr/share/doc/nginx-nr-agent/
 
 binary-indep: build install
 	dh_testdir

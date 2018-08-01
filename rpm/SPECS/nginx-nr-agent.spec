@@ -12,8 +12,7 @@ Source1: nginx-nr-agent.ini
 Source2: nginx-nr-agent.init
 Source3: COPYRIGHT
 Source4: nginx-nr-agent.logrotate
-Source5: README.txt
-Source6: nginx-nr-agent.sysconfig
+Source5: nginx-nr-agent.sysconfig
 
 License: 2-clause BSD-like license
 Group: System Environment/Daemons
@@ -47,8 +46,6 @@ instances to New Relic.
 %{__mkdir} -p $RPM_BUILD_ROOT%{_datadir}/doc/nginx-nr-agent
 %{__install} -m 644 -p %{SOURCE3} \
     $RPM_BUILD_ROOT%{_datadir}/doc/nginx-nr-agent/
-%{__install} -m 644 -p %{SOURCE5} \
-    $RPM_BUILD_ROOT%{_datadir}/doc/nginx-nr-agent/
 
 %{__mkdir} -p $RPM_BUILD_ROOT%{_initrddir}
 %{__install} -m755 %{SOURCE2} \
@@ -59,7 +56,7 @@ instances to New Relic.
    $RPM_BUILD_ROOT%{_sysconfdir}/logrotate.d/nginx-nr-agent
 
 %{__mkdir} -p $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig
-%{__install} -m 755 -p %{SOURCE6} \
+%{__install} -m 755 -p %{SOURCE5} \
 		$RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/nginx-nr-agent
 
 %clean
@@ -92,9 +89,6 @@ Thanks for using NGINX!
 
 NGINX agent for New Relic is installed. Configuration file is:
 %{_sysconfdir}/nginx-nr-agent/nginx-nr-agent.ini
-
-Documentation and configuration examples are available here:
-%{_datadir}/doc/nginx-nr-agent/README.txt
 
 Please use "service nginx-nr-agent" to control the agent daemon.
 

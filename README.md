@@ -34,18 +34,17 @@ software components installed:
   - python-setproctitle (optional)
 
 
-## Installation
+## Build
 
-The best way to install this plugin is to use prebuilt binary packages
-(rpm for CentOS/RedHat platforms, deb for Debian/Ubuntu platforms).
-In case of preconfigured access to repository, installation should be
-as easy as:
+You can build this tool for rpm or debian using the Makefile. Output will be in the `build_output/` directory.
 
-    $ yum install nginx-nr-agent
+```
+   $ make rpm 
+```
 
-or
-
-    $ apt-get install nginx-nr-agent
+```
+   $ make debian
+```
 
 
 ## Configuration
@@ -123,7 +122,7 @@ Edit nginx-nr-agent.ini configuration file:
   * insert your New Relic license key;
 
   * configure data sources (your nginx instances) using the following parameters:
-    - url (required): full URL pointing to stub_status (nginx OSS) or api (N+) output;
+    - url (required): full URL pointing to stub_status (open source NGINX software) or api (NGINX Plus) output;
     - name (required): name of the instance as it will be shown in the New Relic UI;
     - http_user, http_pass (optional): credentials used for
       HTTP basic authorization.
