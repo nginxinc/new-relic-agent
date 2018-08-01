@@ -1,18 +1,11 @@
 
-nginx web server plugin for New Relic
-Copyright (C) Nginx, Inc.
-
+NGINX plugin for New Relic
 
 ## Preface
 
-Visualize nginx web server performance with this plugin provided
-by the original authors of nginx.
+Visualize performance metrics in New Relic for the open source NGINX software and NGINX Plus.
 
-Collect and display key load metrics to track your nginx instances behavior.
-
-This plugin was created by the original authors of nginx web server.
-It allows to collect and report various important counters from an nginx
-web server instance such as:
+It allows to collect and report various important counters from an NGINX instance such as:
 
  * Active client connections
  * Idle (keepalive) client connections
@@ -28,9 +21,6 @@ stats (responses by cache status, traffic from cache).
 
 Metrics will be charted in the New Relic User Interface and you will be able
 to configure alerts based on the values reported by this plugin.
-
-This plugin is distributed under 2-clause BSD-like license.
-
 
 ## Requirements
 
@@ -60,9 +50,9 @@ or
 
 ## Configuration
 
-### NGINX open source
+### NGINX
 
-To configure this plugin to work with nginx OSS using ngx_http_stub_status
+To configure this plugin to work with the open source NGINX software using ngx_http_stub_status
 module (http://nginx.org/en/docs/http/ngx_http_stub_status_module.html),
 you have to special location containing "stub_status" directive, e.g.:
 
@@ -184,3 +174,6 @@ with all output going to stdout:
 Carefully check plugin's output for any possible error messages.
 In case of success, collected data should appear in the New Relic
 user interface shortly after starting.
+
+## Support
+This tool will work with NGINX version R13 and above but support and maintenance of this project will stop at R16
