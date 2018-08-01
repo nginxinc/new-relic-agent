@@ -1,3 +1,5 @@
 build_output/
 debian/nginx-nr-agent.py
 rpm/SOURCES/nginx-nr-agent.py
+*.deb
+*.rpm
