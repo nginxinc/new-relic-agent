@@ -1,10 +1,10 @@
 debian:
 	cp nginx-nr-agent.py debian/
-	mkdir -p ~/nginx-nr-agent/
-	cp -r debian/ ~/nginx-nr-agent/
 	dpkg-buildpackage
 	mkdir -p build_output/
 	mv ../nginx-nr-agent*.deb build_output/
+	mv ../nginx-nr-agent*.tar.gz build_output/
+	rm -f ../nginx-nr-agent*
 
 rpm:
 	cp nginx-nr-agent.py rpm/SOURCES/
@@ -16,7 +16,6 @@ rpm:
 
 clean:
 	rm -rf build_output/
-	rm -f ../nginx-nr-agent*
 	rm -rf ~/rpmbuild/
 
 .PHONY: debian rpm
