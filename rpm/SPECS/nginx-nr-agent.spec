@@ -1,8 +1,8 @@
 #
 Summary: New Relic agent for NGINX and NGINX Plus
 Name: nginx-nr-agent
-Version: 2.0.0
-Release: 12%{?dist}.ngx
+Version: 2.0.1
+Release: 1%{?dist}.ngx
 Vendor: Nginx Software, Inc.
 URL: https://www.nginx.com/
 Packager: Nginx Software, Inc. <https://www.nginx.com>
@@ -106,6 +106,11 @@ if [ $1 -eq 0 ]; then
 fi
 
 %changelog
+* Wed Aug  8 2018 Andrei Belov <defan@nginx.com>
+- 2.0.1_1
+- legacy status module support removed
+- new nginx-plus API support added
+
 * Tue Apr 18 2017 Andrei Belov <defan@nginx.com>
 - 2.0.0_12
 - avoid exiting on unhandled errors while fetching status
