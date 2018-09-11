@@ -13,6 +13,8 @@ Source2: nginx-nr-agent.init
 Source3: COPYRIGHT
 Source4: nginx-nr-agent.logrotate
 Source5: nginx-nr-agent.sysconfig
+Source6: nginx-nr-agent.tmpfiles
+Source7: nginx-nr-agent.service
 
 License: 2-clause BSD-like license
 Group: System Environment/Daemons
@@ -20,8 +22,14 @@ Group: System Environment/Daemons
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 Requires: python >= 2.6
 Requires: python-daemon
+%if 0%{?fedora} >= 19 || 0%{?rhel} >= 7
+Requires(post):    systemd
+Requires(preun):   systemd
+Requires(postun):  systemd
+%else
 Requires: initscripts >= 8.36
 Requires(post): chkconfig
+%endif
 
 BuildArch: noarch
 
@@ -47,9 +55,16 @@ instances to New Relic.
 %{__install} -m 644 -p %{SOURCE3} \
     $RPM_BUILD_ROOT%{_datadir}/doc/nginx-nr-agent/
 
+%if 0%{?fedora} >= 19 || 0%{?rhel} >= 7
+%{__install} -m 755 -d $RPM_BUILD_ROOT%{_prefix}/lib/tmpfiles.d
+%{__install} -m 644 %{SOURCE6} $RPM_BUILD_ROOT%{_prefix}/lib/tmpfiles.d/
+%{__install} -m 755 -d $RPM_BUILD_ROOT%{_unitdir}
+%{__install} -m 644 %{SOURCE7} $RPM_BUILD_ROOT%{_unitdir}/
+%else
 %{__mkdir} -p $RPM_BUILD_ROOT%{_initrddir}
 %{__install} -m755 %{SOURCE2} \
    $RPM_BUILD_ROOT%{_initrddir}/nginx-nr-agent
+%endif
 
 %{__mkdir} -p $RPM_BUILD_ROOT%{_sysconfdir}/logrotate.d
 %{__install} -m 644 -p %{SOURCE4} \
@@ -62,20 +77,14 @@ instances to New Relic.
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
 
-%files
-%defattr(-,root,root)
-%{_bindir}/nginx-nr-agent.py
+%if 0%{?fedora} >= 19 || 0%{?rhel} >= 7
+%post
+%systemd_post nginx.service
 
-%{_initrddir}/nginx-nr-agent
+%postun
+%systemd_preun nginx.service
 
-%dir %{_sysconfdir}/nginx-nr-agent
-%config(noreplace) %{_sysconfdir}/nginx-nr-agent/nginx-nr-agent.ini
-%config(noreplace) %{_sysconfdir}/logrotate.d/nginx-nr-agent
-%config(noreplace) %{_sysconfdir}/sysconfig/nginx-nr-agent
-
-%dir %{_datadir}/doc/nginx-nr-agent
-%{_datadir}/doc/nginx-nr-agent/*
-
+%else
 %post
 if [ $1 -eq 1 ]; then
     /sbin/chkconfig --add nginx-nr-agent
@@ -104,8 +113,31 @@ if [ $1 -eq 0 ]; then
     /sbin/service nginx-nr-agent stop > /dev/null 2>&1
     /sbin/chkconfig --del nginx-nr-agent
 fi
+%endif
+
+%files
+%defattr(-,root,root)
+%{_bindir}/nginx-nr-agent.py
+%if 0%{?fedora} >= 19 || 0%{?rhel} >= 7
+%{_unitdir}/nginx-nr-agent.service
+%{_prefix}/lib/tmpfiles.d/
+%else
+%{_initrddir}/nginx-nr-agent
+%endif
+
+%dir %{_sysconfdir}/nginx-nr-agent
+%config(noreplace) %{_sysconfdir}/nginx-nr-agent/nginx-nr-agent.ini
+%config(noreplace) %{_sysconfdir}/logrotate.d/nginx-nr-agent
+%config(noreplace) %{_sysconfdir}/sysconfig/nginx-nr-agent
+
+%dir %{_datadir}/doc/nginx-nr-agent
+%{_datadir}/doc/nginx-nr-agent/*
 
 %changelog
+* Tue Sep 11 2018 Raven <raven@sysadmins.ws>
+- 2.0.1_2
+- use systemd for RHEL/CentOS >= 7
+
 * Wed Aug  8 2018 Andrei Belov <defan@nginx.com>
 - 2.0.1_1
 - legacy status module support removed
@@ -144,7 +176,7 @@ fi
 - 2.0.0_5
 - bundled documentation announced in post-install banner
 
-* Tue Oct 31 2014 Andrei Belov <defan@nginx.com>
+* Fri Oct 31 2014 Andrei Belov <defan@nginx.com>
 - 2.0.0_4
 - fixed ZeroDivisionError while calculating cache hit ratios
 
