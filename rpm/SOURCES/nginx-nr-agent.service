@@ -1,0 +1,19 @@
+[Unit]
+Description=Nginx NewRelic Agent
+After=network.target
+
+[Service]
+Type=simple
+PIDFile=/run/nginx-nr-agent/nginx-nr-agent.pid
+EnvironmentFile=/etc/sysconfig/nginx-nr-agent
+ExecStart=/usr/bin/nginx-nr-agent.py
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s TERM $MAINPID
+PrivateTmp=true
+Restart=always
+User=nobody
+Group=nobody
+
+[Install]
+WantedBy=multi-user.target
+
