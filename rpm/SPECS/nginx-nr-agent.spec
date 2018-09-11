@@ -2,7 +2,7 @@
 Summary: New Relic agent for NGINX and NGINX Plus
 Name: nginx-nr-agent
 Version: 2.0.1
-Release: 1%{?dist}.ngx
+Release: 2%{?dist}.ngx
 Vendor: Nginx Software, Inc.
 URL: https://www.nginx.com/
 Packager: Nginx Software, Inc. <https://www.nginx.com>
