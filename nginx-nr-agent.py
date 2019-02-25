@@ -15,7 +15,7 @@ import traceback
 
 NEWRELIC_API_URL = 'https://platform-api.newrelic.com/platform/v1/metrics'
 AGENT_GUID = 'com.nginx.newrelic-agent'
-AGENT_VERSION = '2.0.0'
+AGENT_VERSION = '2.0.1'
 API_VERSION = '1'
 
 DEFAULT_CONFIG_FILE = '/etc/nginx-nr-agent/nginx-nr-agent.ini'
