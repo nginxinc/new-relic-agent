@@ -49,11 +49,11 @@ software components installed:
 You can build this tool for rpm or debian using the Makefile. Output will be in the `build_output/` directory.
 
 
-```
+```console
 $ make rpm
 ```
 
-```
+```console
 $ make debian
 ```
 
@@ -154,7 +154,7 @@ export HTTPS_PROXY="your-proxy-host.example.com:3128"
 Plugin can be started as a daemon (default) or in foreground mode.
 In order to start it daemonized, use the following command under root:
 
-```
+```console
 $ service nginx-nr-agent start
 ```
 
@@ -163,20 +163,20 @@ into /var/log/nginx-nr-agent.log.
 
 Plugin status can be checked by running:
 
-```
+```console
 $ service nginx-nr-agent status
 ```
 
 To stop plugin, use:
 
-```
+```console
 $ service nginx-nr-agent stop
 ```
 
 For debugging purposes, you can launch the plugin in foreground mode,
 with all output going to stdout:
 
-```
+```console
 $ nginx-nr-agent.py -f start
 ```
 
