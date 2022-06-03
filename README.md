@@ -1,3 +1,4 @@
+# THIS REPO IS ARCHIVED
 
 NGINX plugin for New Relic
 
