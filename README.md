@@ -1,5 +1,7 @@
 # THIS REPO IS ARCHIVED
 
+# NGINX will not be supporting this project in any way. This includes not fixing any security vulnerabilities
+
 NGINX plugin for New Relic
 
 ## Preface
