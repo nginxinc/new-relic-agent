@@ -1,6 +1,6 @@
 # THIS REPO IS ARCHIVED
 
-# NGINX will not be supporting this project in any way. This includes not fixing any security vulnerabilities
+# This repository has been archived. There will likely be no further development on the project and security vulnerabilities may be unaddressed.
 
 NGINX plugin for New Relic
 
